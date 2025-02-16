@@ -1,19 +1,16 @@
 import './index.css';
-import { Layout } from './components/layout/Layout';
-import { ConnectionStatus } from './components/ConnectionStatus';
-import { AuctionGrid } from './components/AuctionGrid';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HomePage } from './pages/HomePage';
+import { CategoryPage } from './pages/CategoryPage';
 
 function App() {
   return (
-    <Layout showSidebar={true}>
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">Online Auction Platform</h1>
-        <ConnectionStatus />
-        <div className="mt-8">
-          <AuctionGrid />
-        </div>
-      </div>
-    </Layout>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/category/:category" element={<CategoryPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
