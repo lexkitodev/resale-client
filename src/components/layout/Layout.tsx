@@ -47,7 +47,7 @@ export const Layout = ({ children, showSidebar = false }: LayoutProps) => {
         {/* Main content */}
         <main
           className={`
-          flex-grow px-4 py-4 
+          flex-grow px-4 sm:px-6 py-4 
           ${showSidebar ? 'lg:pl-4' : ''} 
           transition-all duration-200 ease-in-out
         `}

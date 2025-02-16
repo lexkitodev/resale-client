@@ -2,6 +2,7 @@ import { AuctionItem } from './AuctionItem';
 
 const MOCK_ITEMS = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
+  sku: `SKU${String(i + 1).padStart(4, '0')}`,
   title: `Sample Auction Item ${i + 1}`,
   image: `https://picsum.photos/400/400?random=${i}`,
   currentBid: Math.random() * 100 + 10,
