@@ -20,15 +20,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, marketingEmails: boolean) => {
-    const response = await authService.signUp({ email, password, marketingEmails });
-    setUser(response.user);
-    setIsAuthenticated(true);
+    try {
+      console.log('AuthProvider: Attempting signup');
+      const response = await authService.signUp({ email, password, marketingEmails });
+      console.log('AuthProvider: Signup successful');
+      setUser(response.user);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('AuthProvider: Signup failed', error);
+      throw error;
+    }
   };
 
-  const signOut = () => {
-    authService.signOut();
-    setUser(null);
-    setIsAuthenticated(false);
+  const signOut = async () => {
+    try {
+      await authService.signOut();
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   return (

@@ -32,9 +32,16 @@ export interface AuthResponse {
 
 class AuthService {
   async signUp(data: SignUpData): Promise<AuthResponse> {
-    const response = await axios.post(`${API_URL}/auth/signup`, data);
-    this.setToken(response.data.token);
-    return response.data;
+    try {
+      console.log('Making signup request to:', `${API_URL}/auth/signup`);
+      const response = await api.post('/auth/signup', data);
+      console.log('Signup response:', response.data);
+      this.setToken(response.data.token);
+      return response.data;
+    } catch (error) {
+      console.error('Signup request failed:', error);
+      throw error;
+    }
   }
 
   async signIn(data: SignInData): Promise<AuthResponse> {
@@ -43,8 +50,12 @@ class AuthService {
     return response.data;
   }
 
-  signOut() {
-    localStorage.removeItem('token');
+  async signOut(): Promise<void> {
+    try {
+      await api.post('/auth/signout');
+    } finally {
+      localStorage.removeItem('token');
+    }
   }
 
   getToken(): string | null {

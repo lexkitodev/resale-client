@@ -5,6 +5,13 @@ import { FaGoogle, FaApple } from 'react-icons/fa';
 import { useAuth } from '../hooks/useAuth';
 import type { ApiError } from '../types/api';
 
+interface ValidationErrors {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  terms?: string;
+}
+
 export const SignUpPage = () => {
   const navigate = useNavigate();
   const { signUp } = useAuth();
@@ -13,19 +20,72 @@ export const SignUpPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [agreeToMarketing, setAgreeToMarketing] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [apiError, setApiError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const validatePassword = (password: string) => {
+    const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,32}$/;
+    return regex.test(password);
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (!validatePassword(password)) {
+      newErrors.password =
+        'Password must be 8-32 characters and include uppercase, lowercase, number and special character';
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (!agreeToTerms) {
+      newErrors.terms = 'You must agree to the Terms of Service';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setApiError('');
+    setErrors({});
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
+      console.log('Attempting signup with:', { email, password, agreeToMarketing });
       await signUp(email, password, agreeToMarketing);
+      console.log('Signup successful');
       navigate('/');
     } catch (err) {
-      const error = err as ApiError;
-      const errorMessage = error.response?.data?.error || 'Registration failed';
-      setError(errorMessage);
+      console.error('Signup error:', err);
+      if (err instanceof Error) {
+        setApiError(err.message);
+      } else {
+        const apiError = err as ApiError;
+        const errorMessage = apiError.response?.data?.error || 'Registration failed';
+        setApiError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -41,9 +101,9 @@ export const SignUpPage = () => {
           </div>
         </div>
 
-        {error && (
+        {apiError && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-            {error}
+            {apiError}
           </div>
         )}
 
@@ -57,9 +117,13 @@ export const SignUpPage = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4169e1]"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4169e1] ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={isLoading}
               required
             />
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
           </div>
 
           <div>
@@ -71,62 +135,88 @@ export const SignUpPage = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4169e1]"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4169e1] ${
+                errors.password ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={isLoading}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
-              8-32 characters, at least one digit, one lowercase letter, one uppercase letter, and
-              one special character.
-            </p>
+            {errors.password ? (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500">
+                8-32 characters, must include uppercase, lowercase, number and special character
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="confirm-password" className="block text-sm text-gray-700 mb-1">
-              Confirm password
+            <label htmlFor="confirmPassword" className="block text-sm text-gray-700 mb-1">
+              Confirm Password
             </label>
             <input
               type="password"
-              id="confirm-password"
+              id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4169e1]"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#4169e1] ${
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={isLoading}
               required
             />
+            {errors.confirmPassword && (
+              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <label className="flex items-center gap-2">
+          <div className="space-y-3">
+            <div className="flex items-start">
               <input
                 type="checkbox"
+                id="terms"
                 checked={agreeToTerms}
                 onChange={(e) => setAgreeToTerms(e.target.checked)}
-                className="w-4 h-4 text-[#4169e1] border-gray-300 rounded focus:ring-[#4169e1]"
+                className={`mt-1 rounded focus:ring-[#4169e1] ${
+                  errors.terms ? 'border-red-500' : 'border-gray-300'
+                } ${agreeToTerms ? 'text-[#4169e1]' : ''}`}
+                disabled={isLoading}
                 required
               />
-              <span className="text-sm text-gray-700">
-                I agree to{' '}
+              <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
+                I agree to the{' '}
                 <Link to="/terms" className="text-[#4169e1] hover:underline">
-                  Terms & Conditions
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link to="/privacy" className="text-[#4169e1] hover:underline">
+                  Privacy Policy
                 </Link>
-              </span>
-            </label>
+              </label>
+            </div>
+            {errors.terms && <p className="text-sm text-red-600">{errors.terms}</p>}
 
-            <label className="flex items-center gap-2">
+            <div className="flex items-start">
               <input
                 type="checkbox"
+                id="marketing"
                 checked={agreeToMarketing}
                 onChange={(e) => setAgreeToMarketing(e.target.checked)}
-                className="w-4 h-4 text-[#4169e1] border-gray-300 rounded focus:ring-[#4169e1]"
+                className="mt-1 rounded text-[#4169e1] focus:ring-[#4169e1]"
+                disabled={isLoading}
               />
-              <span className="text-sm text-gray-700">I agree to receive marketing emails</span>
-            </label>
+              <label htmlFor="marketing" className="ml-2 text-sm text-gray-700">
+                I want to receive marketing emails about products, services and deals
+              </label>
+            </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-[#4169e1] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700"
+            className="w-full bg-[#4169e1] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
           >
-            Register
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 

@@ -1,10 +1,39 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaBell, FaUser } from 'react-icons/fa';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 
 export const AuthNav = () => {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [notificationCount] = useState(1); // This will be dynamic later
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await signOut();
+      setIsDropdownOpen(false);
+      navigate('/signin');
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
 
   return (
     <div className="flex items-center gap-4 md:gap-8">
@@ -32,7 +61,7 @@ export const AuthNav = () => {
       </button>
 
       {/* User Menu */}
-      <div className="relative">
+      <div className="relative" ref={dropdownRef}>
         <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="p-2">
           <FaUser className="w-5 h-5 text-gray-700" />
         </button>
@@ -42,27 +71,45 @@ export const AuthNav = () => {
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
             {/* Mobile-only links */}
             <div className="md:hidden">
-              <Link to="/my-bids" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              <Link
+                to="/my-bids"
+                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsDropdownOpen(false)}
+              >
                 My Bids
               </Link>
-              <Link to="/my-wins" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              <Link
+                to="/my-wins"
+                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsDropdownOpen(false)}
+              >
                 My Wins
               </Link>
-              <Link to="/wishlist" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              <Link
+                to="/wishlist"
+                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsDropdownOpen(false)}
+              >
                 Wishlist
               </Link>
               <hr className="my-2" />
             </div>
-            <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+            <Link
+              to="/profile"
+              className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsDropdownOpen(false)}
+            >
               Profile
             </Link>
-            <Link to="/settings" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+            <Link
+              to="/settings"
+              className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+              onClick={() => setIsDropdownOpen(false)}
+            >
               Settings
             </Link>
             <button
-              onClick={() => {
-                // Handle sign out
-              }}
+              onClick={handleSignOut}
               className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
             >
               Sign Out
