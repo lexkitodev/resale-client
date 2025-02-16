@@ -1,19 +1,32 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { FaGoogle, FaApple } from 'react-icons/fa';
+import { useAuth } from '../hooks/useAuth';
+import type { ApiError } from '../types/api';
 
 export const SignUpPage = () => {
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [agreeToMarketing, setAgreeToMarketing] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Handle sign up
-    console.log('Sign up:', { email, password, confirmPassword, agreeToTerms, agreeToMarketing });
+    setError('');
+
+    try {
+      await signUp(email, password, agreeToMarketing);
+      navigate('/');
+    } catch (err) {
+      const error = err as ApiError;
+      const errorMessage = error.response?.data?.error || 'Registration failed';
+      setError(errorMessage);
+    }
   };
 
   return (
@@ -27,6 +40,12 @@ export const SignUpPage = () => {
             <span className="text-[#4169e1] border-b-2 border-[#4169e1] font-medium">Sign Up</span>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
