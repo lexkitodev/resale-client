@@ -6,6 +6,7 @@ class SocketService {
   private readonly url: string;
 
   constructor() {
+    console.log(import.meta.env.VITE_API_URL);
     this.url = import.meta.env.VITE_API_URL || 'http://localhost:5001';
   }
 
