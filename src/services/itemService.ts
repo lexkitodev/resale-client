@@ -9,6 +9,11 @@ export interface Item {
   retailPrice: number;
   imageUrl: string;
   endTime: string;
+  categories: {
+    id: number;
+    name: string;
+    slug: string;
+  }[];
 }
 
 export interface ItemsResponse {
@@ -29,6 +34,11 @@ class ItemService {
     const response = await api.get<ItemsResponse>(`/categories/${slug}/items`, {
       params: { page },
     });
+    return response.data;
+  }
+
+  async getById(id: number): Promise<Item> {
+    const response = await api.get<Item>(`/categories/items/${id}`);
     return response.data;
   }
 }

@@ -1,10 +1,12 @@
-import { DocumentTitle } from '../components/common/DocumentTitle';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
-export const SettingsPage = () => {
+export function SettingsPage() {
+  useDocumentTitle('Settings');
+
   return (
-    <>
-      <DocumentTitle title="Settings" />
-      {/* rest of the component */}
-    </>
+    <div>
+      <h1>Settings</h1>
+      {/* Add settings content here */}
+    </div>
   );
-};
+}

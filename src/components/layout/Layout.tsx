@@ -41,9 +41,7 @@ export const Layout = ({ children, showSidebar = true }: LayoutProps) => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 px-4 sm:px-6 py-8">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
+        <main className="flex-1 px-4 sm:px-6 py-8">{children}</main>
       </div>
 
       {/* Footer */}

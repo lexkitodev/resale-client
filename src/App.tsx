@@ -6,9 +6,14 @@ import { ItemPage } from './pages/ItemPage';
 import { SignInPage } from './pages/SignInPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { AuthProvider } from './contexts/authContext';
+import { AuthProvider } from './context/AuthProvider';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { CategoryProvider } from './contexts/categoryContext';
+import { CategoryProvider } from './context/categoryContext';
+import { MyBidsPage } from './pages/MyBidsPage';
+import { MyWinsPage } from './pages/MyWinsPage';
+import { WishlistPage } from './pages/WishlistPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { SettingsPage } from './pages/SettingsPage';
 
 function App() {
   return (
@@ -18,7 +23,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/category/:category" element={<CategoryPage />} />
-            <Route path="/item/:sku/:id" element={<ItemPage />} />
+            <Route path="/item/:id" element={<ItemPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
 
@@ -27,7 +32,7 @@ function App() {
               path="/my-bids"
               element={
                 <ProtectedRoute>
-                  <HomePage />
+                  <MyBidsPage />
                 </ProtectedRoute>
               }
             />
@@ -35,7 +40,7 @@ function App() {
               path="/my-wins"
               element={
                 <ProtectedRoute>
-                  <HomePage />
+                  <MyWinsPage />
                 </ProtectedRoute>
               }
             />
@@ -43,7 +48,7 @@ function App() {
               path="/wishlist"
               element={
                 <ProtectedRoute>
-                  <HomePage />
+                  <WishlistPage />
                 </ProtectedRoute>
               }
             />
@@ -51,7 +56,7 @@ function App() {
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <HomePage />
+                  <ProfilePage />
                 </ProtectedRoute>
               }
             />
@@ -59,7 +64,7 @@ function App() {
               path="/settings"
               element={
                 <ProtectedRoute>
-                  <HomePage />
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />

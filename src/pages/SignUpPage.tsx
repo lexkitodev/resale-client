@@ -71,7 +71,7 @@ export const SignUpPage = () => {
     setIsLoading(true);
 
     try {
-      console.log('Attempting signup with:', { email, password, agreeToMarketing });
+      console.log('Attempting signup for:', email);
       await signUp(email, password, agreeToMarketing);
       console.log('Signup successful');
       navigate('/');
