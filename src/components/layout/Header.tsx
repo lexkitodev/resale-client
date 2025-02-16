@@ -14,9 +14,10 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white z-50">
-      <div className="border-b border-gray-200">
-        <div className="px-4 sm:px-6">
-          <div className="h-16 flex items-center gap-4">
+      {/* Main Header */}
+      <div className="h-16 border-b border-gray-200">
+        <div className="px-4 sm:px-6 h-full">
+          <div className="h-full flex items-center gap-4">
             {/* Menu Button - Categories */}
             <button className="p-2 rounded-lg hover:bg-gray-100 lg:hidden" onClick={onMenuClick}>
               <FaBars className="h-6 w-6 text-gray-600" />
@@ -113,7 +114,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
       )}
 
       {/* Navigation */}
-      <div className="border-b border-gray-200 overflow-x-auto">
+      <div className="border-b border-gray-200 overflow-x-auto bg-white">
         <div className="px-4 sm:px-6">
           <nav className="flex space-x-6 h-12 whitespace-nowrap">
             <Link
