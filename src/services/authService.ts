@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { AxiosResponse } from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -34,7 +35,7 @@ class AuthService {
   async signUp(data: SignUpData): Promise<AuthResponse> {
     try {
       console.log('Making signup request to:', `${API_URL}/auth/signup`);
-      const response = await api.post('/auth/signup', data);
+      const response: AxiosResponse<AuthResponse> = await api.post('/auth/signup', data);
       console.log('Signup response:', response.data);
       this.setToken(response.data.token);
       return response.data;
@@ -45,7 +46,7 @@ class AuthService {
   }
 
   async signIn(data: SignInData): Promise<AuthResponse> {
-    const response = await api.post('/auth/signin', data);
+    const response: AxiosResponse<AuthResponse> = await api.post('/auth/signin', data);
     this.setToken(response.data.token);
     return response.data;
   }
