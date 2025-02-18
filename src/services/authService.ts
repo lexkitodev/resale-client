@@ -1,4 +1,7 @@
 import axios from 'axios';
+import type { AxiosResponse } from 'axios';
+import { socket } from '../socket';
+import { tokenService } from './tokenService';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -34,7 +37,7 @@ class AuthService {
   async signUp(data: SignUpData): Promise<AuthResponse> {
     try {
       console.log('Making signup request to:', `${API_URL}/auth/signup`);
-      const response = await api.post('/auth/signup', data);
+      const response: AxiosResponse<AuthResponse> = await api.post('/auth/signup', data);
       console.log('Signup response:', response.data);
       this.setToken(response.data.token);
       return response.data;
@@ -45,8 +48,13 @@ class AuthService {
   }
 
   async signIn(data: SignInData): Promise<AuthResponse> {
-    const response = await api.post('/auth/signin', data);
-    this.setToken(response.data.token);
+    const response = await api.post<AuthResponse>('/auth/signin', data);
+    const { token } = response.data;
+
+    tokenService.setToken(token);
+    socket.auth = { token };
+    socket.disconnect().connect();
+
     return response.data;
   }
 
@@ -54,7 +62,8 @@ class AuthService {
     try {
       await api.post('/auth/signout');
     } finally {
-      localStorage.removeItem('token');
+      tokenService.removeToken();
+      socket.disconnect();
     }
   }
 
@@ -67,7 +76,7 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return tokenService.hasToken();
   }
 }
 

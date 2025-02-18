@@ -5,10 +5,11 @@ import { FaGoogle, FaApple } from 'react-icons/fa';
 import { useAuth } from '../hooks/useAuth';
 import type { ApiError } from '../types/api';
 import { DocumentTitle } from '../components/common/DocumentTitle';
+import { authService } from '../services/authService';
 
 export const SignInPage = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { setIsAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,9 +21,11 @@ export const SignInPage = () => {
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
+      await authService.signIn({ email, password });
+      setIsAuthenticated(true);
       navigate('/');
     } catch (err) {
+      console.error('Sign in error:', err);
       const error = err as ApiError;
       const errorMessage = error.response?.data?.error || 'An error occurred during sign in';
       setError(errorMessage);

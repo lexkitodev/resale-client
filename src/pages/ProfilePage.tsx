@@ -1,10 +1,12 @@
-import { DocumentTitle } from '../components/common/DocumentTitle';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
-export const ProfilePage = () => {
+export function ProfilePage() {
+  useDocumentTitle('Profile');
+
   return (
-    <>
-      <DocumentTitle title="Profile" />
-      {/* rest of the component */}
-    </>
+    <div>
+      <h1>Profile</h1>
+      {/* Add profile content here */}
+    </div>
   );
-};
+}
