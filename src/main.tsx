@@ -4,6 +4,9 @@ import './index.css';
 import App from './App';
 import { socket } from './socket';
 
+// Initialize socket connection
+socket.connect();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

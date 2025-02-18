@@ -1,27 +1,32 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
-import { FaHeart, FaShare } from 'react-icons/fa';
+import { FaHeart, FaShare, FaSpinner } from 'react-icons/fa';
 import { SimilarItems } from '../components/SimilarItems';
 import { DocumentTitle } from '../components/common/DocumentTitle';
 import { itemService, Item } from '../services/itemService';
 import { formatTimeLeft, formatCurrency } from '../utils/formatters';
-import { FaSpinner } from 'react-icons/fa';
+import { bidService, type BidUpdate } from '../services/bidService';
+import { useAuth } from '../hooks/useAuth';
 
 export const ItemPage = () => {
   const { id } = useParams<{ id: string }>();
+  const { isAuthenticated } = useAuth();
   const [item, setItem] = useState<Item | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBidding, setIsBidding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentBid, setCurrentBid] = useState<number | null>(null);
+  const [totalBids, setTotalBids] = useState(0);
 
   useEffect(() => {
     const loadItem = async () => {
       if (!id) return;
-
       try {
         setIsLoading(true);
         const data = await itemService.getById(Number(id));
         setItem(data);
+        setCurrentBid(data.currentBid || data.startPrice);
       } catch (err) {
         setError('Failed to load item');
         console.error('Failed to load item:', err);
@@ -32,6 +37,45 @@ export const ItemPage = () => {
 
     loadItem();
   }, [id]);
+
+  useEffect(() => {
+    if (!item) return;
+
+    const handleBidUpdate = (update: BidUpdate) => {
+      console.log('Received bid update:', update);
+      setCurrentBid(update.currentBid);
+      setTotalBids(update.totalBids);
+    };
+
+    bidService.subscribeToBidUpdates(item.id, handleBidUpdate);
+
+    return () => {
+      bidService.unsubscribeFromBidUpdates(item.id);
+    };
+  }, [item]);
+
+  const handleBid = async () => {
+    if (!item || !isAuthenticated) {
+      setError('Please sign in to place a bid');
+      return;
+    }
+
+    setError(null);
+    setIsBidding(true);
+
+    try {
+      const nextBid = (currentBid || item.startPrice) + 1;
+      console.log('Attempting to place bid:', { itemId: item.id, amount: nextBid });
+      await bidService.placeBid(item.id, nextBid);
+      console.log('Bid placed successfully');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to place bid';
+      setError(errorMessage);
+      console.error('Bid error:', err);
+    } finally {
+      setIsBidding(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -100,7 +144,7 @@ export const ItemPage = () => {
                     <div className="space-y-1">
                       <div className="text-sm text-gray-500">Current Bid</div>
                       <div className="text-3xl font-medium">
-                        {formatCurrency(item.currentBid || item.startPrice)}
+                        {formatCurrency(currentBid || item?.startPrice || 0)}
                       </div>
                     </div>
                     <div className="text-right space-y-1">
@@ -127,8 +171,20 @@ export const ItemPage = () => {
                     </div>
                   </div>
 
-                  <button className="w-full bg-[#4169e1] text-white py-3 rounded-lg text-sm font-medium hover:bg-blue-700">
-                    Bid {formatCurrency((item.currentBid || item.startPrice) + 1)}
+                  <div className="text-sm text-gray-500">{totalBids} bids</div>
+
+                  <button
+                    onClick={handleBid}
+                    disabled={isBidding || !isAuthenticated}
+                    className="w-full bg-[#4169e1] text-white py-3 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {isBidding ? (
+                      <FaSpinner className="w-5 h-5 animate-spin mx-auto" />
+                    ) : !isAuthenticated ? (
+                      'Sign in to bid'
+                    ) : (
+                      `Bid ${formatCurrency((currentBid || item?.startPrice || 0) + 1)}`
+                    )}
                   </button>
                 </div>
               </div>
@@ -140,6 +196,12 @@ export const ItemPage = () => {
             <SimilarItems category="pet-supplies" currentItemId={Number(id)} />
           </div>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
       </Layout>
     </>
   );
